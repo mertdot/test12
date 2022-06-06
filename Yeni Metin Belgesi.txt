@@ -1,0 +1,385 @@
+; dosya olusturakim, acalim, yazalim ve kapatalim
+.model small
+.data
+    yol db "C:\esra.txt",00H
+    dno dw ?  
+    basarili1 db "Dosya olusturuldu...",13,10,"$" 
+    basarili2 db "Dosya acildi...",13,10,"$"  
+    basarili3 db "Dosyaya yazildi...",13,10,"$"  
+    basarili4 db "Dosya kapatildi...",13,10,"$" 
+    bilgi db "Dosyaya yazilacak ifadeyi giriniz...",13,10,"$" 
+    mes1 db "Dosya olusturulamadi...",13,10,"$" 
+    mes2 db "Dosya acilamadi...",13,10,"$"
+    mes3 db "Dosyaya yazilamadi...",13,10,"$"
+    yaz db 10 dup (00)
+.code
+    mov ax,@data
+    mov ds,ax
+    
+    ;dosyayi olusturalim
+    mov ah,3ch
+    lea dx, yol
+    mov cx,00;normal turde dosya olusturuldu
+    int 21h
+    jc err1 ;dosya olusturulamadi ise CF=1 olur bu durumda err etketine git
+    mov dno,ax;dosya olusturuldu ise filehandle noyu AX den dno ya al
+    mov ah,09h ; dosya olusturulmus ise buradan devam edili ve ekrana 
+    lea dx,basarili1 ;Dosya olusturuldu diye yaz
+    int 21h
+    
+    ;dosyayi acalim
+    mov ah,3dh
+    lea dx,yol
+    mov al,01;dosyayi yazmak icin ac
+    int 21h
+    jc err2
+    mov dno,ax; dosya hatasiz bir sekilde acildi ise filehandle AX den dno da
+    mov ah,09h ; dosya olusturulmus ise buradan devam edili ve ekrana 
+    lea dx,basarili2 ;Dosya acildi diye yaz
+    int 21h
+    ;klavyeden veri girisi yapilacak
+    ;ekrana kullaniciyi bilgilendirmek icin mesaj yaz 
+    mov ah,09h ; dosya olusturulmus ise buradan devam edili ve ekrana 
+    lea dx,bilgi ;Dosya olusturuldu diye yaz
+    int 21h
+    ;simdi klavyeden veri al
+    mov cx,0010;klavyeden alinacak veri adedi kadar sayac
+    lea si,yaz;DS:SI-->yaz[0]
+giris:mov ah,01h
+    int 21h;klavyeden basilan tusun ASCII kodu AL de
+    mov [si],al 
+    inc si
+    loop giris
+    
+    
+    ;dosyaya yazalim
+    mov ah,40h
+    mov cx,0010;dosyaya yazilacak ifadenin boyutu
+    lea dx,yaz; yazilacak ifadenin ekin adresi DX de
+    mov bx,dno
+    int 21h
+    jc err3;dosyaya yazmada hata var ise err3 etiketine git
+mov dno,ax; dosya hatasiz bir sekilde acildi ise filehandle AX den dno da
+    mov ah,09h ; dosyaya yazilmis ise buradan devam edilir ve ekrana 
+    lea dx,basarili3 ;Dosyaya yazildi diye yaz
+    int 21h
+    
+    ;dosyayi kapatalim
+    mov ah,3eh ;3ch'ti acmaydi simdi kapatma oldu
+    mov bx,dno
+    int 21h 
+    mov ah,09h  
+    lea dx,basarili4 ;Dosya kapatildi diye yaz
+    int 21h
+     
+    jmp cik
+err1:mov ah,09h ; ve ekrana 
+    lea dx,mes1 ;Dosya olusturulamadi... diye yaz
+    int 21h 
+err2:mov ah,09h ; ve ekrana 
+    lea dx,mes2 ;Dosya acilamadi... diye yaz
+    int 21h  
+err3:mov ah,09h ; ve ekrana 
+    lea dx,mes3 ;Dosyaya yazilamadi... diye yaz
+    int 21h    
+cik:mov ah,4ch
+    int 21h
+    end
+
+----------------------------------------------------------------------------
+
+SİSTEM PROGRAMLAMA DERSİ ALIŞTIRMA
+
+
+1. Tanımlanan bir dizi içerisinde, klavyeden girilen bir harfi arayan programı yazınız.
+
+
+ORG 0100H
+
+.MODEL SMALL
+
+.STACK
+
+.DATA
+
+LISTE DB 4,'A','B','C','D'    
+
+MESAJ DB "HARF:$"  
+
+
+BULUNDUMESAJ DB "HARF DIZIDE BULUNUYOR:$"  
+
+BULUNAMADIMESAJ DB "HARF DIZININ ICINDE BULUNAMADI:$"
+
+ALTAGEC DB 0AH,0DH,24H
+
+.CODE
+
+MAIN PROC
+
+    CALL SOR
+
+ENDP
+
+SOR PROC
+
+    LEA DX,MESAJ
+
+    MOV AH,9
+
+    INT 21H 
+
+    MOV AH,01
+
+    INT 21H
+
+    CALL DONGU
+
+ENDP
+
+DONGU PROC SIFIRLA:
+
+    MOV CX,0
+
+    MOV BH,4
+
+    DENE:
+
+    MOV SI,CX
+
+    MOV BL,LISTE[SI]
+
+    ADD BL,30H
+
+    CMP BL,AL
+
+    JNE TARA
+
+    JMP BULUNDU
+
+    TARA:
+
+    DEC BH
+
+    CMP BH,0
+
+    JE BULUNAMADI
+
+    INC CX
+
+    JMP DENE
+
+    
+
+    BULUNDU:LEA DX,ALTAGEC
+
+    MOV AH,9
+
+    INT 21H 
+
+    
+
+    LEA DX,BULUNDUMESAJ
+
+    MOV AH,9
+
+    INT 21H
+
+    JMP BITIR 
+
+    
+
+    BULUNAMADI:
+
+    LEA DX,ALTAGEC
+
+    MOV AH,9
+
+    INT 21H
+
+    
+
+   LEA DX,BULUNAMADIMESAJ
+
+   MOV AH,9
+
+   INT 21H
+
+   JMP BITIR
+
+   BITIR:
+
+   ENDP END MAIN
+
+ -------------------------------------------------------------------------------------------------------
+SİSTEM PROGRAMLAMA DERSİ ALIŞTIRMA
+
+
+
+Kendi adınızı şifreleyen ve yığın üzerinden veri segmentinden ekstra segmente taşıyan programı Assembly dili ile yazınız. 
+
+Şifreleme, addaki her bir harfin ASCII koduna, bu elemanın ad içindeki indis değeri eklenerek gerçekleştirilecektir. Örneğin;
+
+Dizi db ‘e’, ‘s’, ‘r’, ‘a’     harf dizisi için şifreleme:
+
+        ASCII (e) + 0 = 101 + 0 = 101🡪 e
+
+        ASCII (s) + 1 = 115 + 1 = 116🡪 t
+
+ASCII (r) + 2 = 114 + 2 = 116🡪 t
+
+        ASCII (a) + 3 =   97 + 3 = 100🡪 d
+
+olmaktadır.
+
+    NOT:
+
+Karakter değişkenler tanımlandıklarında, ilgili bellek kısmında ASCII kodlarının HEX olarak tutulduğunu unutmayınız. 
+
+Adınızdaki Türkçe karakterler yerine İngilizce karakterleri kullanınız.
+
+.model small
+
+     .data
+
+               dizi db 'e','s','r','a'
+
+ .code
+
+               mov ax,@data
+
+               mov ds,ax
+
+               lea bx,dizi
+
+               mov cx,04
+
+    
+
+sifrele:    mov ax,bx
+
+               add [bx],al
+
+                  inc bx
+
+               loop sifrele
+
+    
+
+                mov cx,04
+
+               lea bx,dizi
+
+    
+
+devam: push ds:[bx]
+
+               pop es:[di]
+
+                inc bx
+
+               inc di
+
+               loop devam 
+
+               
+
+mov ah,4ch
+
+               int 21h
+
+               end
+------------------------------------------------------------------------------------------------------
+
+SİSTEM PROGRAMLAMA DERSİ ALIŞTIRMA
+
+
+Kendi adınızı şifreleyen ve yığın üzerinden veri segmentinden ekstra segmente taşıyan programı Assembly dili ile yazınız. 
+Şifreleme, addaki her bir harfin ASCII koduna, bu elemanın ad içindeki indis değeri eklenerek gerçekleştirilecektir. Örneğin;
+Dizi db ‘e’, ‘s’, ‘r’, ‘a’     harf dizisi için şifreleme:
+		ASCII (e) + 0 = 101 + 0 = 101 e
+		ASCII (s) + 1 = 115 + 1 = 116 t
+ASCII (r) + 2 = 114 + 2 = 116 t
+		ASCII (a) + 3 =   97 + 3 = 100 d
+olmaktadır.
+	NOT:
+Karakter değişkenler tanımlandıklarında, ilgili bellek kısmında ASCII kodlarının HEX olarak tutulduğunu unutmayınız. 
+Adınızdaki Türkçe karakterler yerine İngilizce karakterleri kullanınız.
+.model small
+ 	.data
+       		dizi db 'e','s','r','a'
+ .code
+       		 mov ax,@data
+       		 mov ds,ax
+       		 lea bx,dizi
+       		 mov cx,04
+    
+sifrele:	mov ax,bx
+       		add [bx],al
+        	   	inc bx
+       		loop sifrele
+    
+        		ov cx,04
+       		lea bx,dizi
+    
+devam: push ds:[bx]
+       		pop es:[di]
+        		inc bx
+       		inc di
+       		loop devam 
+       		
+mov ah,4ch
+       		int 21h
+       		end
+
+-----------------------------------------------------------------------------------------
+
+SİSTEM PROGRAMLAMA DERSİ ALIŞTIRMA
+
+
+Aşağıdaki işlemleri gerçekleştiren Assembly kodunu yazınız:
+
+Data Segmentte elemanları byte türünde, “5, 6, 7, 8”olan bir dizi tanımlayınız. 
+
+Bu dizinin her bir elemanının LSB biti “1” ise, bu elemanın LSB bitini AND ile maskeleyiniz. Bu işlemi, döngü kullanarak yapınız. 
+Oluşan bu yeni diziyi, yine data segmentte tanımladığınız boş bir diziye aktarınız. Bu işlemi, döngü kullanarak yapınız.  
+Aktarımı, ilk tanımladığınız dizinin orjinalliğini bozmadan gerçekleştiriniz. 
+
+.model small
+.stack 64
+.data
+    dizi1 db 5,6,7,8
+    dizi2 db 4 dup ?
+.code
+    mov ax,@data
+    mov ds,ax
+    lea si,dizi1
+    lea bx,dizi2
+    mov cx,0004
+devam:mov al,[si]
+    mov [bx],al 
+    rcr [bx],01
+    jc mask
+    rcl [bx],01
+    inc si
+    inc bx
+don:loop devam 
+jmp cik
+    
+    
+    
+mask:rcl [bx],1
+    AND [bx],11111110B
+    inc si
+    inc bx
+     jmp don
+     
+cik:mov ah,4ch
+    int 21h
+    end 
+ 
+    
+    
+    
+------------------------------------------------------------------------------------------------------------
+
